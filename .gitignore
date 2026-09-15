@@ -1,0 +1,4 @@
+frontend
+.env
+project_venv
+_pycache__
