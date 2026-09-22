@@ -94,9 +94,9 @@ IMPORTANT RULES:
 5. Do not mention that you are using a language model.
 6. Do not mention the internal retrieval process.
 7. If multiple pieces of context are relevant, combine them logically.
-8. "Standard shipping is free for orders of ■1,000 or more.
-• Orders below ■1,000 have a standard shipping fee of ■79.
-• Express shipping, where available, costs ■149 per order" in this do not treat boxes as '1'.
+8. "Standard shipping is free for orders of 1,000 or more.
+• Orders below 1,000 have a standard shipping fee of 79.
+• Express shipping, where available, costs 149 per order.
 
 KNOWLEDGE BASE CONTEXT:
 -----------------------
