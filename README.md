@@ -1,357 +1,487 @@
-Nexora Support Assistant
+# Nexora Support Assistant
 
-A RAG-based customer support assistant for Nexora Electronics, combining Amazon Bedrock Knowledge Bases for document retrieval with a local Ollama LLM for response generation.
+> An AI-powered customer support assistant built using Retrieval-Augmented Generation (RAG), Amazon Bedrock Knowledge Bases, Amazon S3, FastAPI, React, and local Ollama inference.
 
-The system allows users to ask natural-language questions about Nexora's shipping, returns, refunds, warranty, products, payments, and other support information.
+Nexora Support Assistant allows users to ask natural-language questions about Nexora Electronics products, shipping, returns, refunds, warranty, payments, account security, and other customer-support information.
 
-Architecture
-                         ┌─────────────────────┐
-                         │    React Frontend   │
-                         │      :5173           │
-                         └──────────┬──────────┘
-                                    │
-                              POST /chat
-                                    │
-                                    ▼
-                         ┌─────────────────────┐
-                         │     FastAPI          │
-                         │      :8000           │
-                         └──────────┬──────────┘
-                                    │
-                                    ▼
-                         ┌─────────────────────┐
-                         │       rag.py         │
-                         │    RAG Pipeline      │
-                         └──────────┬──────────┘
-                                    │
-                         ┌──────────┴──────────┐
-                         │                     │
-                         ▼                     ▼
-                ┌─────────────────┐   ┌─────────────────┐
-                │ Amazon Bedrock  │   │     Ollama      │
-                │ Managed KB      │   │   qwen3:latest  │
-                │                 │   │                 │
-                │   Retrieval     │   │   Generation    │
-                └────────┬────────┘   └────────┬────────┘
-                         │                     │
-                         ▼                     │
-                Relevant PDF chunks ──────────┘
-                                    │
-                                    ▼
-                              Final Answer
-                                    │
-                                    ▼
-                             React Frontend
-Core design
+The system uses **Amazon Bedrock Managed Knowledge Base** for retrieving relevant information from company documents and **Ollama** for generating the final response locally.
 
-Amazon Bedrock is responsible for retrieving relevant information from the knowledge base.
+---
 
-Ollama runs locally and generates the final response using the retrieved context.
+## ✨ Features
 
-This avoids using a Bedrock foundation model for answer generation.
+- 🤖 AI-powered customer support chatbot
+- 🔎 Retrieval-Augmented Generation (RAG)
+- ☁️ Amazon Bedrock Managed Knowledge Base
+- 📦 Amazon S3 document storage
+- 🧠 Local LLM inference using Ollama
+- ⚡ Qwen3 for response generation
+- 🚀 FastAPI backend
+- 💬 React + Vite frontend
+- 📚 Source document display
+- 🛡️ Context-grounded responses
+- 📱 Responsive chat interface
+- 💡 Suggested customer questions
+- 🔌 REST API architecture
+- 🔐 Separation between retrieval and generation
 
-Features
-Natural-language customer support
-Retrieval-Augmented Generation (RAG)
+---
+
+# 🏗️ System Architecture
+
+```text
+                         ┌─────────────────────────┐
+                         │      React Frontend     │
+                         │        Vite :5173       │
+                         └────────────┬────────────┘
+                                      │
+                                  POST /chat
+                                      │
+                                      ▼
+                         ┌─────────────────────────┐
+                         │       FastAPI API       │
+                         │        :8000            │
+                         └────────────┬────────────┘
+                                      │
+                                      ▼
+                         ┌─────────────────────────┐
+                         │         rag.py          │
+                         │      RAG Pipeline       │
+                         └────────────┬────────────┘
+                                      │
+                         ┌────────────┴────────────┐
+                         │                         │
+                         ▼                         ▼
+              ┌─────────────────────┐   ┌─────────────────────┐
+              │  Amazon Bedrock     │   │       Ollama        │
+              │  Managed KB         │   │    qwen3:latest     │
+              │                     │   │                     │
+              │     Retrieval       │   │     Generation      │
+              └──────────┬──────────┘   └──────────┬──────────┘
+                         │                         │
+                         ▼                         │
+                 Relevant PDF Chunks ─────────────┘
+                                      │
+                                      ▼
+                              Final AI Response
+                                      │
+                                      ▼
+                              React Chat Interface
+```
+
+---
+
+# 🔄 RAG Workflow
+
+The application follows this pipeline:
+
+```text
+User Question
+      │
+      ▼
+React Frontend
+      │
+      ▼
+FastAPI /chat
+      │
+      ▼
 Amazon Bedrock Managed Knowledge Base
-Amazon S3 document storage
-Local LLM inference using Ollama
-Qwen3 8B-class local model
-FastAPI backend
-React + Vite frontend
-Source display for retrieved documents
-Loading/typing indicator
-Suggested questions
-Responsive chat interface
-Context-grounded answers
-Protection against unsupported/invented answers
-Technology Stack
-Component	Technology
-Frontend	React
-Frontend tooling	Vite
-Backend	FastAPI
-API server	Uvicorn
-RAG	Amazon Bedrock Knowledge Base
-Document storage	Amazon S3
-Local LLM	Ollama
-Generation model	qwen3:latest
-Language	Python / JavaScript
-Cloud region	ap-south-1
-Knowledge Base
+      │
+      ▼
+Relevant Document Chunks
+      │
+      ▼
+Context Construction
+      │
+      ▼
+Ollama - Qwen3
+      │
+      ▼
+Generated Answer
+      │
+      ▼
+Answer + Sources
+      │
+      ▼
+React Frontend
+```
 
-The Nexora Knowledge Base contains PDF documents covering:
+### Example
 
+A user asks:
+
+```text
+What are Nexora's shipping and delivery policies?
+```
+
+The system:
+
+1. Sends the question from the React frontend.
+2. FastAPI receives the question.
+3. The RAG pipeline queries the Bedrock Knowledge Base.
+4. Bedrock retrieves relevant document chunks.
+5. The retrieved chunks are combined into a context.
+6. The question and context are sent to Ollama.
+7. Qwen3 generates the final answer.
+8. The API returns the answer and source documents.
+9. React displays the response and sources.
+
+---
+
+# 🧰 Technology Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React |
+| Frontend Tooling | Vite |
+| Backend | FastAPI |
+| API Server | Uvicorn |
+| RAG | Amazon Bedrock Managed Knowledge Base |
+| Document Storage | Amazon S3 |
+| Local LLM Runtime | Ollama |
+| Generation Model | `qwen3:latest` |
+| Programming Languages | Python, JavaScript |
+| Cloud Region | `ap-south-1` |
+
+---
+
+# 📚 Knowledge Base
+
+The Nexora Knowledge Base contains the following documents:
+
+```text
 01_company_overview.pdf
 02_shipping_delivery_policy.pdf
 03_returns_refunds_policy.pdf
 04_warranty_support_policy.pdf
 05_products_and_faq.pdf
 06_payments_account_security.pdf
+```
 
-These documents are uploaded to Amazon S3 and synchronized with the Amazon Bedrock Managed Knowledge Base.
+These documents are stored in Amazon S3 and synchronized with the Amazon Bedrock Managed Knowledge Base.
 
-Project Structure
+---
+
+# 📁 Project Structure
+
+```text
 nexora-support-assistant/
 │
-├── rag.py
 ├── main.py
+├── rag.py
 ├── .env
+├── .gitignore
 ├── pyproject.toml
 ├── uv.lock
+├── README.md
 │
-├── frontend/
-│   ├── src/
-│   │   ├── App.jsx
-│   │   ├── App.css
-│   │   └── main.jsx
-│   │
-│   ├── public/
-│   ├── package.json
-│   └── vite.config.js
-│
-└── README.md
-How the RAG Pipeline Works
+└── frontend/
+    ├── public/
+    │
+    ├── src/
+    │   ├── App.jsx
+    │   ├── App.css
+    │   └── main.jsx
+    │
+    ├── package.json
+    └── vite.config.js
+```
 
-When a customer asks:
+---
 
-What is Nexora's shipping policy?
+# ⚙️ Prerequisites
 
-the request follows this pipeline:
+Make sure the following software is installed:
 
-1. User question
+- Python 3.11+
+- Node.js
+- npm
+- AWS CLI
+- Ollama
+- `uv`
 
-The React frontend sends:
+Verify the installations:
 
-POST /chat
-
-with:
-
-{
-  "question": "What is Nexora's shipping policy?"
-}
-2. FastAPI
-
-FastAPI receives the question and calls:
-
-ask_nexora(question)
-
-from rag.py.
-
-3. Bedrock retrieval
-
-The application calls the Bedrock Agent Runtime:
-
-client.retrieve(...)
-
-using the Managed Knowledge Base.
-
-The retrieval configuration uses:
-
-"managedSearchConfiguration": {
-    "numberOfResults": 5,
-    "rerankingModelType": "MANAGED"
-}
-4. Relevant chunks
-
-Bedrock returns the most relevant chunks from the Nexora PDFs.
-
-For example:
-
-02_shipping_delivery_policy.pdf
-03_returns_refunds_policy.pdf
-05_products_and_faq.pdf
-5. Context construction
-
-The retrieved chunks are combined into a context passed to the local LLM.
-
-6. Ollama generation
-
-The context and original question are sent to:
-
-Ollama
-└── qwen3:latest
-
-The model is instructed to answer only from the retrieved knowledge-base context.
-
-7. Final response
-
-FastAPI returns:
-
-{
-  "answer": "Nexora's standard delivery typically takes...",
-  "sources": [
-    "s3://.../02_shipping_delivery_policy.pdf"
-  ]
-}
-8. Frontend
-
-React displays:
-
-Customer question
-AI response
-Retrieved source documents
-Requirements
-Software
-
-Install the following:
-
-Python 3.11+
-Node.js
-npm
-AWS CLI
-Ollama
-uv package manager
-
-Verify:
-
+```powershell
 python --version
 node --version
 npm --version
 aws --version
 ollama --version
 uv --version
-Ollama Setup
+```
 
-Make sure Ollama is installed and running.
+---
 
-Check available models:
-
-ollama list
+# 🧠 Ollama Setup
 
 The project currently uses:
 
+```text
 qwen3:latest
+```
 
-If necessary:
+Check installed models:
 
+```powershell
+ollama list
+```
+
+If Qwen3 is not installed:
+
+```powershell
 ollama pull qwen3:latest
+```
 
-Test it:
+Test the model:
 
+```powershell
 ollama run qwen3:latest
-Python Environment
+```
 
-From the project root:
+Ollama should be running locally before using the application.
 
-uv sync
+---
 
-If the required packages have not been added:
+# ☁️ AWS Configuration
 
-uv add boto3 python-dotenv requests fastapi uvicorn
-AWS Configuration
+The application uses Amazon Bedrock Managed Knowledge Base for document retrieval.
 
-The application requires AWS credentials with permission to access the Bedrock Knowledge Base.
+Current configuration:
 
-Verify the configured AWS identity:
+```text
+AWS Region:
+ap-south-1
 
+Knowledge Base ID:
+FLEIRPWEK7
+```
+
+Verify that your AWS CLI credentials are working:
+
+```powershell
 aws sts get-caller-identity
+```
 
-The project currently uses:
+The AWS identity used by the application must have the required permissions to retrieve information from the Bedrock Knowledge Base.
 
-Region: ap-south-1
-Knowledge Base ID: FLEIRPWEK7
+> **Security:** Never commit AWS access keys, secret keys, session tokens, or other credentials to Git.
 
-Do not commit AWS credentials to Git.
+---
 
-Environment Variables
+# 🔐 Environment Variables
 
-Create a .env file if additional environment configuration is required.
+Create a `.env` file in the project root:
 
-Example:
-
+```env
 AWS_REGION=ap-south-1
 KNOWLEDGE_BASE_ID=FLEIRPWEK7
+
 OLLAMA_URL=http://localhost:11434/api/generate
 OLLAMA_MODEL=qwen3:latest
+```
 
-Never place AWS secret keys directly inside source code or commit them to the repository.
+Add `.env` to `.gitignore`:
 
-Running the Backend
+```gitignore
+.env
+.env.*
+```
+
+---
+
+# 🐍 Backend Setup
 
 From the project root:
 
+```powershell
+uv sync
+```
+
+If the dependencies have not been installed yet:
+
+```powershell
+uv add boto3 python-dotenv requests fastapi uvicorn
+```
+
+---
+
+# 🚀 Start the Backend
+
+From the project root:
+
+```powershell
 uv run uvicorn main:app --reload
+```
 
 The backend will run at:
 
+```text
 http://127.0.0.1:8000
+```
 
-FastAPI documentation:
+FastAPI provides interactive API documentation at:
 
+```text
 http://127.0.0.1:8000/docs
+```
 
-You can test the API directly from Swagger UI.
+---
 
-Example request:
+# 🧪 Test the Backend
 
+Open:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+Find:
+
+```text
+POST /chat
+```
+
+Click **Try it out** and use:
+
+```json
 {
   "question": "What are Nexora's shipping and delivery policies?"
 }
-Running the Frontend
+```
 
-Open another terminal.
+Example response:
 
-Navigate to:
+```json
+{
+  "answer": "Nexora's standard delivery policy...",
+  "sources": [
+    "s3://nexora-support-assistant-2026/02_shipping_delivery_policy.pdf"
+  ]
+}
+```
 
+---
+
+# 🎨 Frontend Setup
+
+Navigate to the frontend:
+
+```powershell
 cd frontend
+```
 
 Install dependencies:
 
+```powershell
 npm install
+```
 
 Start the development server:
 
+```powershell
 npm run dev
+```
 
 The frontend will normally be available at:
 
+```text
 http://localhost:5173
-Running the Complete Application
+```
 
-You need the following services running:
+---
 
-Terminal 1 — FastAPI
+# ▶️ Running the Complete Application
+
+The application requires:
+
+- Ollama
+- FastAPI backend
+- React frontend
+- AWS credentials
+- Bedrock Knowledge Base access
+
+## Terminal 1 — Backend
+
+From the project root:
+
+```powershell
 uv run uvicorn main:app --reload
-Ollama
+```
 
-Make sure Ollama is running locally.
+---
 
-Terminal 2 — React
+## Terminal 2 — Frontend
+
+```powershell
 cd frontend
 npm run dev
+```
 
-Then open:
+---
 
-http://localhost:5173
-API
-GET /
+## Ollama
 
-Health check.
+Make sure Ollama is running and the model is available:
 
-Response:
+```powershell
+ollama list
+```
 
+The application uses:
+
+```text
+qwen3:latest
+```
+
+---
+
+# 🔌 API Reference
+
+## `GET /`
+
+Health-check endpoint.
+
+### Response
+
+```json
 {
   "message": "Nexora Support Assistant API is running"
 }
-POST /chat
+```
 
-Send a customer question.
+---
 
-Request
+## `POST /chat`
+
+Processes a customer question through the complete RAG pipeline.
+
+### Request
+
+```json
 {
   "question": "What is Nexora's return policy?"
 }
-Response
+```
+
+### Response
+
+```json
 {
   "answer": "Nexora's return policy...",
   "sources": [
-    "s3://bucket/03_returns_refunds_policy.pdf"
+    "s3://nexora-support-assistant-2026/03_returns_refunds_policy.pdf"
   ]
 }
-Example Questions
+```
 
-The frontend can answer questions such as:
+---
 
+# 💬 Example Questions
+
+The assistant can answer questions such as:
+
+```text
 What are Nexora's shipping policies?
 
 How long does standard delivery take?
@@ -362,128 +492,463 @@ How do I request a refund?
 
 What does the warranty cover?
 
-What payment methods are supported?
+What payment methods does Nexora accept?
 
 How can I protect my Nexora account?
 
 What products does Nexora offer?
-RAG Safety Rules
+```
 
-The generation prompt instructs Ollama to:
+---
 
-Use only retrieved Nexora knowledge.
-Avoid hallucinating information.
-Avoid inventing prices or policies.
-Avoid inventing delivery dates.
-Avoid inventing refund or order status.
-Avoid inventing warranty conditions.
-State when the knowledge base does not contain sufficient information.
-Provide concise customer-support answers.
+# 🛡️ RAG Safety
 
-If the retrieved context does not contain the answer, the assistant should respond:
+The generation prompt is designed to keep the LLM grounded in the retrieved knowledge.
 
+The assistant is instructed to:
+
+- Use only information supplied by the Knowledge Base.
+- Avoid hallucinating policies.
+- Avoid inventing prices.
+- Avoid inventing delivery dates.
+- Avoid inventing refund status.
+- Avoid inventing warranty terms.
+- Avoid inventing customer-specific information.
+- State clearly when the Knowledge Base does not contain enough information.
+- Provide concise customer-support responses.
+
+If the retrieved context does not contain enough information, the assistant should respond:
+
+```text
 I don't have enough information in the Nexora knowledge base to answer that.
-Why Ollama?
+```
 
-The project separates retrieval from generation.
+---
 
-Bedrock
+# 🔎 Source Attribution
+
+The Bedrock retrieval response contains source metadata for retrieved documents.
+
+The application extracts the source URI and returns it with the generated response.
+
+The frontend can therefore display:
+
+```text
+Sources
+
+📄 02_shipping_delivery_policy.pdf
+📄 03_returns_refunds_policy.pdf
+```
+
+This allows users to identify the documents used to answer their question.
+
+---
+
+# 🧩 RAG Implementation
+
+The main RAG implementation is contained in `rag.py`.
+
+## `retrieve_from_kb()`
+
+Retrieves relevant document chunks from the Amazon Bedrock Managed Knowledge Base.
+
+```python
+retrieve_from_kb(question)
+```
+
+The retrieval layer uses the Bedrock Agent Runtime and managed search configuration.
+
+---
+
+## `get_context()`
+
+Extracts the retrieved text and source information.
+
+```python
+get_context(question)
+```
+
+It returns:
+
+```text
+context
+sources
+```
+
+---
+
+## `generate_with_ollama()`
+
+Sends the user question and retrieved context to the local Ollama model.
+
+```python
+generate_with_ollama(question, context)
+```
+
+The current generation model is:
+
+```text
+qwen3:latest
+```
+
+---
+
+## `ask_nexora()`
+
+Combines retrieval and generation into the complete RAG pipeline.
+
+```python
+ask_nexora(question)
+```
+
+Conceptually:
+
+```text
+Question
    ↓
-Knowledge retrieval
-
+Bedrock Retrieval
+   ↓
+Relevant Context
+   ↓
 Ollama
    ↓
-Answer generation
+Final Answer
+```
 
-This provides a useful hybrid architecture:
+---
 
-AWS handles managed knowledge retrieval.
-The LLM runs locally.
-No Bedrock generation model is required.
-Local inference reduces dependence on cloud model inference.
-The generation model can be changed without redesigning the knowledge base.
+# 🏛️ Architecture Decision
 
-For example, the generation model can later be switched from:
+The project intentionally separates **retrieval** from **generation**.
 
+```text
+                 Amazon Bedrock
+                       │
+                       │ Retrieval
+                       ▼
+              Managed Knowledge Base
+                       │
+                       │ Context
+                       ▼
+                    Ollama
+                       │
+                       │ Generation
+                       ▼
+                  Final Answer
+```
+
+### Retrieval
+
+Amazon Bedrock Managed Knowledge Base handles:
+
+- Document retrieval
+- Knowledge-base search
+- Relevant chunk selection
+- Source metadata
+
+### Generation
+
+Ollama handles:
+
+- Context interpretation
+- Natural-language generation
+- Customer-facing response creation
+
+This separation allows the generation model to be changed without redesigning the retrieval layer.
+
+For example:
+
+```text
 qwen3:latest
-
-to:
-
+      │
+      ▼
 llama3.1:8b
+```
 
 or:
 
+```text
+qwen3:latest
+      │
+      ▼
 deepseek-r1:8b
+```
 
-without changing the retrieval layer.
+without changing the fundamental Knowledge Base architecture.
 
-Current Architecture Status
-Component	Status
-S3 document storage	✅ Complete
-PDF knowledge documents	✅ Complete
-Bedrock Managed Knowledge Base	✅ Complete
-Knowledge Base synchronization	✅ Complete
-Bedrock retrieval	✅ Complete
-Python RAG pipeline	✅ Complete
-Ollama integration	✅ Complete
-Qwen3 generation	✅ Complete
-FastAPI backend	✅ Complete
-React frontend	✅ Complete
-Source display	✅ Complete
-Production deployment	⏳ Future
-Authentication	⏳ Future
-Conversation memory	⏳ Future
-Streaming responses	⏳ Future
-Advanced guardrails	⏳ Future
-Future Improvements
+---
 
-Possible next development phases:
+# 📊 Current Project Status
 
-Phase 1 — UX
-Markdown rendering
-Better source cards
-Copy-answer button
-Clear conversation button
-Conversation history
-Improved mobile layout
-Streaming responses
-Phase 2 — RAG Improvements
-Retrieval evaluation
-Query rewriting
-Better chunking strategy
-Retrieval score analysis
-Source-aware citations
-Context compression
-Phase 3 — AI Features
-Conversation memory
-Intent classification
-Follow-up question handling
-Customer-specific workflows
-Tool calling
-Order-status integration
-Phase 4 — Production
-React
-   ↓
-Production API
-   ↓
-Authentication
-   ↓
-RAG Service
-   ↓
-Bedrock Knowledge Base
-   ↓
-LLM
+| Component | Status |
+|---|---|
+| Amazon S3 document storage | ✅ Complete |
+| Nexora PDF documents | ✅ Complete |
+| Bedrock Managed Knowledge Base | ✅ Complete |
+| Knowledge Base synchronization | ✅ Complete |
+| Bedrock retrieval | ✅ Complete |
+| Python RAG pipeline | ✅ Complete |
+| Ollama integration | ✅ Complete |
+| Qwen3 generation | ✅ Complete |
+| FastAPI backend | ✅ Complete |
+| React frontend | ✅ Complete |
+| Source display | ✅ Complete |
+| Production deployment | ⏳ Planned |
+| Conversation memory | ⏳ Planned |
+| Streaming responses | ⏳ Planned |
+| Authentication | ⏳ Planned |
+| Advanced guardrails | ⏳ Planned |
+| Monitoring and logging | ⏳ Planned |
 
-Potential additions include:
+---
 
-Docker
-CI/CD
-Logging
-Monitoring
-Authentication
-Rate limiting
-Error tracking
-Production deployment
-License
+# 🚧 Future Improvements
 
-This project is intended for educational and project-development purposes.
+## Frontend
+
+- [ ] Markdown rendering
+- [ ] Streaming AI responses
+- [ ] Copy response button
+- [ ] Clear conversation button
+- [ ] Conversation history
+- [ ] Better source cards
+- [ ] Improved mobile interface
+- [ ] Dark mode
+
+## RAG
+
+- [ ] Retrieval evaluation
+- [ ] Query rewriting
+- [ ] Retrieval quality metrics
+- [ ] Better source citations
+- [ ] Context compression
+- [ ] RAG evaluation dataset
+
+## AI Features
+
+- [ ] Conversation memory
+- [ ] Intent classification
+- [ ] Follow-up question handling
+- [ ] Tool calling
+- [ ] Order-status integration
+- [ ] Customer-specific workflows
+
+## Production
+
+- [ ] Dockerization
+- [ ] CI/CD
+- [ ] Authentication
+- [ ] Rate limiting
+- [ ] Application logging
+- [ ] Monitoring
+- [ ] Error tracking
+- [ ] Production deployment
+
+---
+
+# 🔒 Security Considerations
+
+Before deploying the project publicly:
+
+- Never expose AWS credentials.
+- Never commit `.env`.
+- Add authentication to the API.
+- Restrict CORS origins.
+- Add API rate limiting.
+- Validate user input.
+- Implement request timeouts.
+- Log errors without exposing secrets.
+- Restrict AWS IAM permissions to the minimum required.
+- Avoid exposing internal S3 paths unnecessarily.
+- Protect customer-specific information if the system is later connected to customer databases.
+
+The current permissive CORS configuration is suitable for local development but should be restricted before production deployment.
+
+---
+
+# 📈 Future Production Architecture
+
+A future production deployment could follow:
+
+```text
+                    ┌─────────────────┐
+                    │  Web / Mobile   │
+                    │     Client      │
+                    └────────┬────────┘
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │ Authentication  │
+                    └────────┬────────┘
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │   API Gateway   │
+                    └────────┬────────┘
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │  RAG Backend    │
+                    │    FastAPI      │
+                    └───────┬─┬───────┘
+                            │ │
+                ┌───────────┘ └───────────┐
+                ▼                         ▼
+       ┌─────────────────┐       ┌─────────────────┐
+       │ Amazon Bedrock  │       │ LLM Generation  │
+       │ Knowledge Base  │       │     Service     │
+       └────────┬────────┘       └─────────────────┘
+                │
+                ▼
+       ┌─────────────────┐
+       │    Amazon S3    │
+       │ Knowledge Docs  │
+       └─────────────────┘
+```
+
+---
+
+# 🧑‍💻 Development
+
+Clone the repository:
+
+```bash
+git clone <repository-url>
+```
+
+Enter the project:
+
+```bash
+cd nexora-support-assistant
+```
+
+Install backend dependencies:
+
+```bash
+uv sync
+```
+
+Install frontend dependencies:
+
+```bash
+cd frontend
+npm install
+```
+
+Configure AWS credentials and environment variables.
+
+Start the backend:
+
+```bash
+uv run uvicorn main:app --reload
+```
+
+Start the frontend in another terminal:
+
+```bash
+cd frontend
+npm run dev
+```
+
+---
+
+# 🗂️ Git Configuration
+
+Recommended `.gitignore`:
+
+```gitignore
+# Environment
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+project_venv/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node
+node_modules/
+frontend/dist/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Local data
+*.sqlite
+*.db
+```
+
+You can optionally commit a safe `.env.example`:
+
+```env
+AWS_REGION=ap-south-1
+KNOWLEDGE_BASE_ID=your-knowledge-base-id
+OLLAMA_URL=http://localhost:11434/api/generate
+OLLAMA_MODEL=qwen3:latest
+```
+
+---
+
+# 📝 License
+
+This project is intended for educational, research, and development purposes.
+
+If this project is distributed publicly, add an appropriate open-source license such as MIT, Apache 2.0, or another license appropriate for the project.
+
+---
+
+# 👨‍💻 Project Summary
+
+**Nexora Support Assistant** demonstrates a practical hybrid RAG architecture:
+
+```text
+                 NEXORA SUPPORT ASSISTANT
+
+                         User
+                          │
+                          ▼
+                   React Frontend
+                          │
+                          ▼
+                     FastAPI
+                          │
+                          ▼
+                ┌──────────────────┐
+                │   RAG Pipeline   │
+                └────────┬─────────┘
+                         │
+             ┌───────────┴───────────┐
+             ▼                       ▼
+      Amazon Bedrock             Ollama
+      Managed KB                Qwen3
+       Retrieval              Generation
+             │                       │
+             └───────────┬───────────┘
+                         ▼
+                    AI Response
+                         │
+                         ▼
+                   Source Documents
+                         │
+                         ▼
+                  React Chat UI
+```
+
+The project combines **managed cloud-based retrieval** with **local LLM inference** to create a complete AI-powered customer-support application.
